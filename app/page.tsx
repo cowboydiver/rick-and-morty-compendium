@@ -1,35 +1,34 @@
 "use client";
 
-import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Card, Flex, Text, theme } from "@chakra-ui/react";
+import { Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Card, Flex, Text, useTheme } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { Character, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
 
 const endpoint = "https://rickandmortyapi.com/api/character";
 
-async function getData() {
-  const res = await fetch(endpoint)
- 
-  if (!res.ok) {
-    throw new Error('Failed to fetch data')
-  }
- 
-  return res.json()
-}
-
 export default function Home() {
 
-  const [data, setData] = useState([])
+  const theme = useTheme()
+
+  const [data, setData] = useState<Character[] | undefined>([])
+
+  const [expanded, setExpanded] = useState<number[] | undefined>(undefined)
 
   useEffect(() => {
-    getData().then(result => {
-      setData(result.results)
+    getCharacters().then(result => {
+      setData(result.data.results?.map((item: Character) => item))
       console.log(result)})
   }, [])
 
+  const onExpand = (index: number[]) => {
+    setExpanded(index)
+  }
+  
   return (
     <Box p="5" w="100vw" h="100vh" bg={theme.colors.gray[200]} overflow="scroll">
       <Card>
-        <Accordion allowToggle allowMultiple>
-         {data ? data.map((item: { name: string }, index) => (
+        <Accordion allowMultiple onChange={onExpand}>
+         { data ? data.map((item, index) => (
           <AccordionItem key={item.name}>
             <AccordionButton key={index}>
               <Flex w="100%" align="left">
