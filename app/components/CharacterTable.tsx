@@ -61,7 +61,7 @@ function ExpandedComponent({ data }: ExpanderComponentProps<Character>) {
                 </Box>
             </Flex>
             <Box border="1px solid" borderColor={theme.colors.gray[500]}>
-                <EpisodeTable episodeUrlArray={data.episode} /> 
+                <EpisodeTable episodeUrlArray={data.episode ?? []} /> 
             </Box>
         </Flex>
     );
@@ -69,7 +69,7 @@ function ExpandedComponent({ data }: ExpanderComponentProps<Character>) {
 
 export default function CharacterTable({ data }: CharacterTableProps) {
     return (
-        <Box>
+        <Box borderRadius={theme.radii.md}>
             <DataTable columns={columns} data={data} expandableRows expandableRowsComponent={ExpandedComponent} />
         </Box>
     );
