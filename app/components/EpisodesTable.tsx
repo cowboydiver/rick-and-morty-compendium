@@ -1,7 +1,7 @@
-import { get } from "http";
-import { use, useEffect, useMemo, useState } from "react";
+import { Box, theme } from "@chakra-ui/react";
+import { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
-import { ApiResponse, Episode, getEpisode, getEpisodes } from "rickmortyapi";
+import { ApiResponse, Episode, getEpisode } from "rickmortyapi";
 
 interface EpisodeTableProps {
     episodeUrlArray: string[];
@@ -10,6 +10,7 @@ interface EpisodeTableProps {
 const episodeColumns: TableColumn<Episode>[] = [
     {
         name: 'Episode Name',
+        width: '300px',
         selector: row => row.name,
     },
     // get the episode number from the the row.episode string
@@ -33,7 +34,10 @@ const episodeColumns: TableColumn<Episode>[] = [
 
 const getEpisodeIds = (episodeUrl: string[]) => {
 
-    let episodeCodes: number[] = [];
+    let episodeCodes: number[] = [0]; //HACK: for some reason this is needed to prevent characters with only one episode from not rendering episodes
+
+    if(episodeUrl === undefined)
+    console.log("episodeUrl is undefined")
     
     episodeUrl?.forEach(url => {
       //get the last number in the url
@@ -41,15 +45,8 @@ const getEpisodeIds = (episodeUrl: string[]) => {
         const episodeNumber = urlArray[urlArray.length - 1]
         episodeCodes.push(parseInt(episodeNumber))
     })
+    
     return episodeCodes
-}
-
-async function getEpisodeData(episodeUrlIds: number[]) {
-    return new Promise<ApiResponse<Episode[]>>(resolve => {
-        getEpisode(episodeUrlIds).then(response => {
-            resolve(response);
-        });
-    });
 }
     
 export default function EpisodeTable({ episodeUrlArray }: EpisodeTableProps) {
@@ -58,15 +55,27 @@ export default function EpisodeTable({ episodeUrlArray }: EpisodeTableProps) {
 	    noRowsPerPage: true,
     };
 
-    const [episodeData, setEpisodeData] = useState<Episode[]>([])
+    const [episodeIds, setEpisodeIds] = useState<number[]>([])
 
+    const [episodeData, setEpisodeData] = useState<Episode[]>([]) //All characters are in an episode
+
+
+    // get episode ids from the url array
     useEffect(() => {
-        const episodeIds = getEpisodeIds(episodeUrlArray)
-        getEpisodeData(episodeIds).then(result => {
-            setEpisodeData(result.data?.map((item: Episode) => item))
-        })
+        setEpisodeIds(getEpisodeIds(episodeUrlArray))
+        console.log(episodeUrlArray)
     }, [episodeUrlArray])
 
-    // return <div>hello</div>
-    return <DataTable columns={episodeColumns} data={episodeData} dense pagination={episodeData.length > 10 ? true : false} paginationComponentOptions={paginationComponentOptions} />
+    useEffect(() => {
+        getEpisode(episodeIds).then(result => {
+            setEpisodeData(result.data.map((item: Episode) => item))
+            console.log("result", result.data, episodeIds)
+        }).catch(err => {   
+            console.log(err)
+        })   
+    }, [episodeIds])
+
+    return (
+        <DataTable columns={episodeColumns} data={episodeData ?? []} dense pagination={episodeData?.length > 10 ? true : false}  paginationComponentOptions={paginationComponentOptions} />
+    )
 }
