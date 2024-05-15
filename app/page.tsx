@@ -18,8 +18,8 @@ export default function Home() {
   const [totaltPages, setTotalPages] = useState<number>(1)
 
   useEffect(() => {
-    searchCharacters()
-  }, [currentPage])
+    gotoPage(1)
+  },[])
 
   function handleSearch(event: React.ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value)
@@ -28,13 +28,25 @@ export default function Home() {
 
   // Use a dedicated function to search for characters as to not call the api each time user types
   function searchCharacters() {
-    getCharacters({ name: search, page: currentPage }).then(result => {
+    setCurrentPage(1)
+    getCharacters({ name: search, page: 1}).then(result => {
       setData(result.data.results?.map((item: Character) => item))
       setTotalPages(result.data.info?.pages ?? 1)
     }).catch(err => {
       console.log(err)
     })
   }
+
+  function gotoPage(newPage: number) {
+    setCurrentPage(newPage)
+    getCharacters({ name: search, page: newPage }).then(result => {
+      setData(result.data.results?.map((item: Character) => item))
+      setTotalPages(result.data.info?.pages ?? 1)
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
   
   return (
     <Box p="5" w="100vw" h="100vh" bg={theme.colors.gray[200]} overflow="scroll">
@@ -46,8 +58,8 @@ export default function Home() {
       <CharacterTable data={data ?? []} />
       <Flex justify="center" m="5">
         <Flex direction="row" gap="5">
-          <Button colorScheme="green" onClick={()=> setCurrentPage(currentPage - 1)} isDisabled={currentPage === 1}>Previous</Button>
-          <Button colorScheme="green" onClick={()=> setCurrentPage(currentPage + 1)} isDisabled={currentPage === totaltPages}>Next</Button>
+          <Button colorScheme="green" onClick={()=> gotoPage(currentPage - 1)} isDisabled={currentPage === 1}>Previous</Button>
+          <Button colorScheme="green" onClick={()=> gotoPage(currentPage + 1)} isDisabled={currentPage === totaltPages}>Next</Button>
         </Flex>
       </Flex>
     </Box>
