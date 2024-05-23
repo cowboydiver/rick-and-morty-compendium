@@ -19,8 +19,14 @@ export default function Home() {
   const [totaltPages, setTotalPages] = useState<number>(1)
 
   useEffect(() => {
-    gotoPage(1)
-  },[]) 
+    console.log("Fetching characters")
+    getCharacters({ name: search, page: currentPage }).then(result => {
+      setData(result.data.results?.map((item: Character) => item) ?? [])
+      setTotalPages(result.data.info?.pages ?? 1)
+    }).catch(err => {
+      console.log(err)
+    })
+  },[currentPage, search])
 
   const {
     handleSubmit,
@@ -29,44 +35,25 @@ export default function Home() {
   } = useForm()
 
   function onSubmit(values: any) {
-    const name = values.name //You shouldn't use any, but I'm lazy right now
-    searchCharacters(name)
-  }
-
-  // Use a dedicated function to search for characters as to not call the api each time user types
-  function searchCharacters(queryName: string) {
+    const name = values.name //You shouldn't use any type, but I'm lazy right now
+    setSearch(name) // Remember for swithing pages
     setCurrentPage(1)
-    getCharacters({ name: queryName, page: 1}).then(result => {
-      setSearch(queryName) //remember the search query for pagination 
-      setData(result.data.results?.map((item: Character) => item) ?? []) //Maybe use the Info interface to get more data
-      setTotalPages(result.data.info?.pages ?? 1)
-    }).catch(err => {
-      console.log(err)
-    })
   }
 
   function gotoPage(newPage: number) {
     setCurrentPage(newPage)
-    getCharacters({ name: search, page: newPage }).then(result => {
-      setData(result.data.results?.map((item: Character) => item) ?? [])
-      setTotalPages(result.data.info?.pages ?? 1)
-    }).catch(err => {
-      console.log(err)
-    })
   }
 
-  
   return (
     <Box p="5" w="100vw" h="100vh" bg={theme.colors.gray[200]} overflow="scroll">
       <Text fontSize="3xl" mb="5">Rick and Morty Characters</Text>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Box mb="4">
-          <FormControl isInvalid={!!errors.name}>
+          <FormControl>
             <Flex direction="row" justify="flex-start">
-              <Input id="name" {...register("name", {required: "Birdperson needs you to type a name", minLength: 1})} placeholder="Search a character" variant="solid" mb="5" maxW="400px" />       
+              <Input id="name" {...register("name")} placeholder="Search a character" variant="solid" mb="5" maxW="400px" />       
               <Button type="submit" colorScheme="green" ml="5" isLoading={isSubmitting}>Search</Button>
             </Flex>
-            <FormErrorMessage>{!!errors.name && errors.name.message?.toString()}</FormErrorMessage>
           </FormControl>
         </Box>
       </form>
