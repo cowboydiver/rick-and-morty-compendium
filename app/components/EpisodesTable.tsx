@@ -1,7 +1,6 @@
-import { Box, theme } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import DataTable, { TableColumn } from "react-data-table-component";
-import { ApiResponse, Episode, getEpisode } from "rickmortyapi";
+import { Episode, getEpisode } from "rickmortyapi";
 
 interface EpisodeTableProps {
     episodeUrlArray: string[];
@@ -63,13 +62,11 @@ export default function EpisodeTable({ episodeUrlArray }: EpisodeTableProps) {
     // get episode ids from the url array
     useEffect(() => {
         setEpisodeIds(getEpisodeIds(episodeUrlArray))
-        console.log(episodeUrlArray)
     }, [episodeUrlArray])
 
     useEffect(() => {
         getEpisode(episodeIds).then(result => {
             setEpisodeData(result.data.map((item: Episode) => item))
-            console.log("result", result.data, episodeIds)
         }).catch(err => {   
             console.log(err)
         })   
