@@ -1,16 +1,16 @@
 "use client";
 
-import { Box, Button, Flex, FormControl, FormErrorMessage, Input, Text, useTheme } from "@chakra-ui/react";
-import { useEffect, useState} from "react";
-import { useForm } from 'react-hook-form'
-import { Character, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
+import { Box, Button, Flex, FormControl, Input, Text, useTheme } from "@chakra-ui/react";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from 'react-hook-form';
+import { ApiResponse, Character, Info, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
 import CharacterTable from "./components/CharacterTable";
 
 export default function Home() {
 
   const theme = useTheme()
 
-  const [data, setData] = useState<Character[]>([])
+  const [data, setData] = useState<ApiResponse<Info<Character[]>>>()
 
   const [search, setSearch] = useState<string>("")
 
@@ -19,14 +19,17 @@ export default function Home() {
   const [totaltPages, setTotalPages] = useState<number>(1)
 
   useEffect(() => {
-    console.log("Fetching characters")
     getCharacters({ name: search, page: currentPage }).then(result => {
-      setData(result.data.results?.map((item: Character) => item) ?? [])
-      setTotalPages(result.data.info?.pages ?? 1)
+      setData(result)
     }).catch(err => {
       console.log(err)
     })
   },[currentPage, search])
+
+  const characters = useMemo(() => {
+    setTotalPages(data?.data.info?.pages ?? 1)
+    return data?.data.results?.map((item: Character) => item) ?? []
+  },[data])
 
   const {
     handleSubmit,
@@ -37,7 +40,7 @@ export default function Home() {
   function onSubmit(values: any) {
     const name = values.name //You shouldn't use any type, but I'm lazy right now
     setSearch(name) // Remember for swithing pages
-    setCurrentPage(1)
+    setCurrentPage(1) // make sure we view the first page of the name search. Else, we might end on a page that doesn't exist
   }
 
   function gotoPage(newPage: number) {
@@ -57,7 +60,7 @@ export default function Home() {
           </FormControl>
         </Box>
       </form>
-      <CharacterTable data={data ?? []} />
+      <CharacterTable data={characters ?? []} />
       <Flex justify="center" m="5">
         <Flex direction="row" gap="5">
           <Button colorScheme="green" onClick={()=> gotoPage(currentPage - 1)} isDisabled={currentPage === 1}>Previous</Button>
