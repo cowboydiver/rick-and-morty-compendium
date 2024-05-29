@@ -23,7 +23,7 @@ const episodeColumns: TableColumn<Episode>[] = [
 	{
 		name: "Episode",
 		selector: (row) => {
-			const episodeCode = row.episode.split("E")[1].split("S")[0];
+			const episodeCode = row.episode.split("E")[1];
 			return episodeCode;
 		},
 	},
