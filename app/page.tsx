@@ -9,35 +9,41 @@ import {
 	Text,
 	useTheme,
 } from "@chakra-ui/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { ApiResponse, Character, Info, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
 import CharacterTable from "./components/CharacterTable";
+import {
+	SearchActionTypes,
+	initialState,
+	searchReducer,
+} from "./reducers/SearchReducer";
 
 export default function Home() {
 	const theme = useTheme();
 
 	const [data, setData] = useState<ApiResponse<Info<Character[]>>>();
 
-	// TODO: Maybe use a useReducer for search and page states
-	const [search, setSearch] = useState<string>("");
-
-	const [currentPage, setCurrentPage] = useState<number>(1);
-
-	const [totaltPages, setTotalPages] = useState<number>(1);
+	// Note: In this case the reducer is overkill, but it is fun to try it out
+	const [state, dispatch] = useReducer(searchReducer, initialState);
 
 	useEffect(() => {
-		getCharacters({ name: search, page: currentPage })
+		console.log(state.search, state.page);
+		getCharacters({ name: state.search, page: state.page })
 			.then((result) => {
+				console.log(result);
 				setData(result);
 			})
 			.catch((err) => {
 				console.log(err);
 			});
-	}, [currentPage, search]);
+	}, [state.page, state.search]);
 
 	const characters = useMemo(() => {
-		setTotalPages(data?.data.info?.pages ?? 1);
+		dispatch({
+			type: SearchActionTypes.TOTAL_PAGES,
+			payload: data?.data.info?.pages ?? 1,
+		});
 		return data?.data.results?.map((item: Character) => item) ?? [];
 	}, [data]);
 
@@ -48,13 +54,7 @@ export default function Home() {
 	} = useForm();
 
 	function onSubmit(values: FieldValues) {
-		const name = values.name;
-		setSearch(name); // Remember for swithing pages
-		setCurrentPage(1); // make sure we view the first page of the name search. Else, we might end on a page that doesn't exist
-	}
-
-	function gotoPage(newPage: number) {
-		setCurrentPage(newPage);
+		dispatch({ type: SearchActionTypes.SEARCH, payload: values.name });
 	}
 
 	return (
@@ -97,15 +97,18 @@ export default function Home() {
 				<Flex direction="row" gap="5">
 					<Button
 						colorScheme="green"
-						onClick={() => gotoPage(currentPage - 1)}
-						isDisabled={currentPage === 1}
+						onClick={() => dispatch({ type: SearchActionTypes.DECREMENT })}
+						isDisabled={state.page === 1}
 					>
 						Previous
 					</Button>
+					<Box>{state.page}</Box>
+					<Box>of</Box>
+					<Box>{state.totalPages}</Box>
 					<Button
 						colorScheme="green"
-						onClick={() => gotoPage(currentPage + 1)}
-						isDisabled={currentPage === totaltPages}
+						onClick={() => dispatch({ type: SearchActionTypes.INCREMENT })}
+						isDisabled={state.page === state.totalPages}
 					>
 						Next
 					</Button>
