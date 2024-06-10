@@ -30,7 +30,7 @@ const episodeColumns: TableColumn<Episode>[] = [
 ];
 
 const getEpisodeIds = (episodeUrl: string[]) => {
-	let episodeCodes: number[] = [0]; //HACK: for some reason this is needed to prevent characters with only one episode from not rendering episodes
+	let episodeCodes: number[] = []; //HACK: for some reason this is needed to prevent characters with only one episode from not rendering episodes
 
 	if (episodeUrl === undefined) console.log("episodeUrl is undefined");
 
@@ -49,25 +49,23 @@ export default function EpisodeTable({ episodeUrlArray }: EpisodeTableProps) {
 		noRowsPerPage: true,
 	};
 
-	//TODO: Make this a useReducer function
-	const [episodeIds, setEpisodeIds] = useState<number[]>([]);
-
-	const [episodeData, setEpisodeData] = useState<Episode[]>([]); //All characters are in an episode
-
-	// get episode ids from the url array
-	useEffect(() => {
-		setEpisodeIds(getEpisodeIds(episodeUrlArray));
-	}, [episodeUrlArray]);
+	const [episodeData, setEpisodeData] = useState<Episode[]>([]); //All characters are in an episode so we don't need to check for undefined
 
 	useEffect(() => {
-		getEpisode(episodeIds)
+		getEpisode(getEpisodeIds(episodeUrlArray))
 			.then((result) => {
+				// check of the result is an array or an object
+				// if it is an object, convert it to an array
+				// this is needed because the API returns an object if there is only one episode
+				if (!Array.isArray(result.data)) {
+					result.data = [result.data];
+				}
 				setEpisodeData(result.data.map((item: Episode) => item));
 			})
 			.catch((err) => {
 				console.log(err);
 			});
-	}, [episodeIds]);
+	}, [episodeUrlArray]);
 
 	return (
 		<DataTable
