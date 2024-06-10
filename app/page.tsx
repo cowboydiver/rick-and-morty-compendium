@@ -1,18 +1,11 @@
 "use client";
 
-import {
-	Box,
-	Button,
-	Flex,
-	FormControl,
-	Input,
-	Text,
-	useTheme,
-} from "@chakra-ui/react";
+import { Box, Button, Flex, Text, useTheme } from "@chakra-ui/react";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { ApiResponse, Character, Info, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
 import CharacterTable from "./components/CharacterTable";
+import SearchBar from "./components/SearchBar";
 import {
 	SearchActionTypes,
 	initialState,
@@ -68,30 +61,12 @@ export default function Home() {
 			<Text fontSize="3xl" mb="5">
 				Rick and Morty Characters
 			</Text>
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<Box mb="4">
-					<FormControl>
-						<Flex direction="row" justify="flex-start">
-							<Input
-								id="name"
-								{...register("name")}
-								placeholder="Search a character"
-								variant="solid"
-								mb="5"
-								maxW="400px"
-							/>
-							<Button
-								type="submit"
-								colorScheme="green"
-								ml="5"
-								isLoading={isSubmitting}
-							>
-								Search
-							</Button>
-						</Flex>
-					</FormControl>
-				</Box>
-			</form>
+			<SearchBar
+				isSubmitting={isSubmitting}
+				onSubmit={onSubmit}
+				handleSubmit={handleSubmit}
+				register={register}
+			/>
 			<CharacterTable data={characters ?? []} />
 			<Flex justify="center" m="5">
 				<Flex direction="row" gap="5">
