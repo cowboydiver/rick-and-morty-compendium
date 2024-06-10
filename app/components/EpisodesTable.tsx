@@ -30,7 +30,7 @@ const episodeColumns: TableColumn<Episode>[] = [
 ];
 
 const getEpisodeIds = (episodeUrl: string[]) => {
-	let episodeCodes: number[] = []; //HACK: for some reason this is needed to prevent characters with only one episode from not rendering episodes
+	let episodeCodes: number[] = [];
 
 	if (episodeUrl === undefined) console.log("episodeUrl is undefined");
 

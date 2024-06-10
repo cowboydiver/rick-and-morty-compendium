@@ -18,6 +18,7 @@ import {
 	initialState,
 	searchReducer,
 } from "./reducers/SearchReducer";
+import SearchBar from "./components/SearchBar";
 
 export default function Home() {
 	const theme = useTheme();
@@ -68,30 +69,12 @@ export default function Home() {
 			<Text fontSize="3xl" mb="5">
 				Rick and Morty Characters
 			</Text>
-			<form onSubmit={handleSubmit(onSubmit)}>
-				<Box mb="4">
-					<FormControl>
-						<Flex direction="row" justify="flex-start">
-							<Input
-								id="name"
-								{...register("name")}
-								placeholder="Search a character"
-								variant="solid"
-								mb="5"
-								maxW="400px"
-							/>
-							<Button
-								type="submit"
-								colorScheme="green"
-								ml="5"
-								isLoading={isSubmitting}
-							>
-								Search
-							</Button>
-						</Flex>
-					</FormControl>
-				</Box>
-			</form>
+			<SearchBar
+				handleSubmit={handleSubmit}
+				onSubmit={onSubmit}
+				register={register}
+				isSubmitting={isSubmitting}
+			/>
 			<CharacterTable data={characters ?? []} />
 			<Flex justify="center" m="5">
 				<Flex direction="row" gap="5">
