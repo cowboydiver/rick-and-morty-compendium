@@ -1,67 +1,119 @@
 "use client";
 
-import { Box, Button, Flex, Input, InputGroup, InputLeftElement, Text, useTheme } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
-import { Character, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
+import {
+	Box,
+	Button,
+	Flex,
+	FormControl,
+	Input,
+	Text,
+	useTheme,
+} from "@chakra-ui/react";
+import { useEffect, useMemo, useReducer, useState } from "react";
+import { FieldValues, useForm } from "react-hook-form";
+import { ApiResponse, Character, Info, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
 import CharacterTable from "./components/CharacterTable";
+import {
+	SearchActionTypes,
+	initialState,
+	searchReducer,
+} from "./reducers/SearchReducer";
 
 export default function Home() {
+	const theme = useTheme();
 
-  const theme = useTheme()
+	const [data, setData] = useState<ApiResponse<Info<Character[]>>>();
 
-  const [data, setData] = useState<Character[] | undefined>([])
+	// Note: In this case the reducer is overkill, but it is fun to try it out
+	const [state, dispatch] = useReducer(searchReducer, initialState);
 
-  const [search, setSearch] = useState<string>("")
+	useEffect(() => {
+		console.log(state.search, state.page);
+		getCharacters({ name: state.search, page: state.page })
+			.then((result) => {
+				console.log(result);
+				setData(result);
+			})
+			.catch((err) => {
+				console.log(err);
+			});
+	}, [state.page, state.search]);
 
-  const [currentPage, setCurrentPage] = useState<number>(1)
+	const characters = useMemo(() => {
+		dispatch({
+			type: SearchActionTypes.TOTAL_PAGES,
+			payload: data?.data.info?.pages ?? 1,
+		});
+		return data?.data.results?.map((item: Character) => item) ?? [];
+	}, [data]);
 
-  const [totaltPages, setTotalPages] = useState<number>(1)
+	const {
+		handleSubmit,
+		register,
+		formState: { errors, isSubmitting },
+	} = useForm();
 
-  useEffect(() => {
-    gotoPage(1)
-  },[])
+	function onSubmit(values: FieldValues) {
+		dispatch({ type: SearchActionTypes.SEARCH, payload: values.name });
+	}
 
-  function handleSearch(event: React.ChangeEvent<HTMLInputElement>) {
-    setSearch(event.target.value)
-    console.log(search)
-  }
-
-  // Use a dedicated function to search for characters as to not call the api each time user types
-  function searchCharacters() {
-    setCurrentPage(1)
-    getCharacters({ name: search, page: 1}).then(result => {
-      setData(result.data.results?.map((item: Character) => item))
-      setTotalPages(result.data.info?.pages ?? 1)
-    }).catch(err => {
-      console.log(err)
-    })
-  }
-
-  function gotoPage(newPage: number) {
-    setCurrentPage(newPage)
-    getCharacters({ name: search, page: newPage }).then(result => {
-      setData(result.data.results?.map((item: Character) => item))
-      setTotalPages(result.data.info?.pages ?? 1)
-    }).catch(err => {
-      console.log(err)
-    })
-  }
-
-  
-  return (
-    <Box p="5" w="100vw" h="100vh" bg={theme.colors.gray[200]} overflow="scroll">
-      <Text fontSize="3xl" mb="5">Rick and Morty Characters</Text>
-      <Flex direction="row">
-        <Input variant="solid" placeholder="Search character name" mb="5" maxW="400px" onChange={handleSearch}/>
-        <Button colorScheme="green" ml="5" onClick={searchCharacters}>Search</Button>
-      </Flex>
-      <CharacterTable data={data ?? []} />
-      <Flex justify="center" m="5">
-        <Flex direction="row" gap="5">
-          <Button colorScheme="green" onClick={()=> gotoPage(currentPage - 1)} isDisabled={currentPage === 1}>Previous</Button>
-          <Button colorScheme="green" onClick={()=> gotoPage(currentPage + 1)} isDisabled={currentPage === totaltPages}>Next</Button>
-        </Flex>
-      </Flex>
-    </Box>
-  );
+	return (
+		<Box
+			p="5"
+			w="100vw"
+			h="100vh"
+			bg={theme.colors.gray[200]}
+			overflow="scroll"
+		>
+			<Text fontSize="3xl" mb="5">
+				Rick and Morty Characters
+			</Text>
+			<form onSubmit={handleSubmit(onSubmit)}>
+				<Box mb="4">
+					<FormControl>
+						<Flex direction="row" justify="flex-start">
+							<Input
+								id="name"
+								{...register("name")}
+								placeholder="Search a character"
+								variant="solid"
+								mb="5"
+								maxW="400px"
+							/>
+							<Button
+								type="submit"
+								colorScheme="green"
+								ml="5"
+								isLoading={isSubmitting}
+							>
+								Search
+							</Button>
+						</Flex>
+					</FormControl>
+				</Box>
+			</form>
+			<CharacterTable data={characters ?? []} />
+			<Flex justify="center" m="5">
+				<Flex direction="row" gap="5">
+					<Button
+						colorScheme="green"
+						onClick={() => dispatch({ type: SearchActionTypes.DECREMENT })}
+						isDisabled={state.page === 1}
+					>
+						Previous
+					</Button>
+					<Box>{state.page}</Box>
+					<Box>of</Box>
+					<Box>{state.totalPages}</Box>
+					<Button
+						colorScheme="green"
+						onClick={() => dispatch({ type: SearchActionTypes.INCREMENT })}
+						isDisabled={state.page === state.totalPages}
+					>
+						Next
+					</Button>
+				</Flex>
+			</Flex>
+		</Box>
+	);
 }
