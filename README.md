@@ -2,11 +2,9 @@
 
 This project is bootstrapped with Next.js, mostly to access Vercels deploy platform. 
 
-The current deployment can be accessed here: [https://rick-and-morty-compendium.vercel.app/]
-
-The project used Chakra-UI as component library, since that's what I'm familiar with, but Radix could be a good alternative for unstyled components. React-data-table is used for table setup, since this is a clean-looking, intuitive library with a easy-to-use expanding table option.
-
 The Rick and Morty api has it's own package with methods and types for easier development when using REST.
+
+The current deployment can be accessed here: [https://rick-and-morty-compendium.vercel.app/]
 
 If you wan't to run the project locally then here's some instructions below:
 
