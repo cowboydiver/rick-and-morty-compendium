@@ -56,7 +56,7 @@ export default function EpisodeTable({ episodeUrlArray }: EpisodeTableProps) {
 			.then((result) => {
 				// check of the result is an array or an object
 				// if it is an object, convert it to an array
-				// this is needed because the API returns an object if there is only one episode
+				// this is needed because the API returns a single object if there is only one episode
 				if (!Array.isArray(result.data)) {
 					result.data = [result.data];
 				}

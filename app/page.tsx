@@ -32,8 +32,11 @@ export default function Home() {
 		console.log(state.search, state.page);
 		getCharacters({ name: state.search, page: state.page })
 			.then((result) => {
-				console.log(result);
 				setData(result);
+				dispatch({
+					type: SearchActionTypes.TOTAL_PAGES,
+					payload: result.data.info?.pages ?? 1,
+				});
 			})
 			.catch((err) => {
 				console.log(err);
@@ -41,17 +44,13 @@ export default function Home() {
 	}, [state.page, state.search]);
 
 	const characters = useMemo(() => {
-		dispatch({
-			type: SearchActionTypes.TOTAL_PAGES,
-			payload: data?.data.info?.pages ?? 1,
-		});
 		return data?.data.results?.map((item: Character) => item) ?? [];
 	}, [data]);
 
 	const {
 		handleSubmit,
 		register,
-		formState: { errors, isSubmitting },
+		formState: { isSubmitting },
 	} = useForm();
 
 	function onSubmit(values: FieldValues) {
