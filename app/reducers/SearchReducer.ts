@@ -18,12 +18,13 @@ export enum SearchActionTypes {
 	DECREMENT = "DECREMENT",
 }
 
-export type SearchAction = {
-	type: SearchActionTypes;
-	payload?: string | number;
-};
+export type SearchAction =
+	| { type: SearchActionTypes.SEARCH; payload?: string }
+	| { type: SearchActionTypes.PAGE; payload?: number }
+	| { type: SearchActionTypes.TOTAL_PAGES; payload?: number }
+	| { type: SearchActionTypes.INCREMENT }
+	| { type: SearchActionTypes.DECREMENT };
 
-// Note: Making a reducer for this is overkill, but it is fun to try it out
 export const searchReducer = (
 	state: SearchState,
 	action: SearchAction

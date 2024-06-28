@@ -29,18 +29,24 @@ export default function Home() {
 	const [state, dispatch] = useReducer(searchReducer, initialState);
 
 	useEffect(() => {
-		console.log(state.search, state.page);
+		let iscanceled = false;
 		getCharacters({ name: state.search, page: state.page })
 			.then((result) => {
-				setData(result);
-				dispatch({
-					type: SearchActionTypes.TOTAL_PAGES,
-					payload: result.data.info?.pages ?? 1,
-				});
+				if (!iscanceled) {
+					setData(result);
+					dispatch({
+						type: SearchActionTypes.TOTAL_PAGES,
+						payload: result.data.info?.pages ?? 1,
+					});
+				}
 			})
 			.catch((err) => {
 				console.log(err);
 			});
+
+		return () => {
+			iscanceled = true;
+		};
 	}, [state.page, state.search]);
 
 	const characters = useMemo(() => {
