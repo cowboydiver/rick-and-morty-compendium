@@ -5,7 +5,7 @@ export const initialState: SearchState = {
 };
 
 export type SearchState = {
-	search: string;
+	search: string | undefined;
 	page: number;
 	totalPages: number;
 };
@@ -31,7 +31,7 @@ export const searchReducer = (
 ): SearchState => {
 	switch (action.type) {
 		case SearchActionTypes.SEARCH:
-			return { ...state, search: action.payload as string, page: 1 };
+			return { ...state, search: action.payload, page: 1 };
 		case SearchActionTypes.PAGE:
 			return { ...state, page: action.payload as number };
 		case SearchActionTypes.TOTAL_PAGES:
