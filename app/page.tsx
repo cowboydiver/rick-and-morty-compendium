@@ -1,31 +1,23 @@
 "use client";
 
-import {
-	Box,
-	Button,
-	Flex,
-	FormControl,
-	Input,
-	Text,
-	useTheme,
-} from "@chakra-ui/react";
+import { Box, Text, useTheme } from "@chakra-ui/react";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { ApiResponse, Character, Info, getCharacters } from "rickmortyapi"; //Use this to get types and easier access to the API
 import CharacterTable from "./components/CharacterTable";
+import CharacterTableFooter from "./components/CharacterTableFooter";
+import SearchBar from "./components/SearchBar";
 import {
 	SearchActionTypes,
 	initialState,
 	searchReducer,
 } from "./reducers/SearchReducer";
-import SearchBar from "./components/SearchBar";
 
 export default function Home() {
 	const theme = useTheme();
 
 	const [data, setData] = useState<ApiResponse<Info<Character[]>>>();
 
-	// Note: In this case the reducer is overkill, but it is fun to try it out
 	const [state, dispatch] = useReducer(searchReducer, initialState);
 
 	useEffect(() => {
@@ -81,27 +73,7 @@ export default function Home() {
 				isSubmitting={isSubmitting}
 			/>
 			<CharacterTable data={characters ?? []} />
-			<Flex justify="center" m="5">
-				<Flex direction="row" gap="5">
-					<Button
-						colorScheme="green"
-						onClick={() => dispatch({ type: SearchActionTypes.DECREMENT })}
-						isDisabled={state.page === 1}
-					>
-						Previous
-					</Button>
-					<Box>{state.page}</Box>
-					<Box>of</Box>
-					<Box>{state.totalPages}</Box>
-					<Button
-						colorScheme="green"
-						onClick={() => dispatch({ type: SearchActionTypes.INCREMENT })}
-						isDisabled={state.page === state.totalPages}
-					>
-						Next
-					</Button>
-				</Flex>
-			</Flex>
+			<CharacterTableFooter state={state} dispatch={dispatch} />
 		</Box>
 	);
 }
